@@ -4,8 +4,42 @@ const Schema = mongoose.Schema;
 
 const auctionSchema = new Schema(
   {
+    auctionDate: {
+      type: String
+    },
+    
+    auctionTime: {
+      type: String
+    },
+
+    auctionLocation: {
+      type: String
+    },
+
+    locationMap: {
+      type: String
+    },
+
+    contactPhone1: {
+      type: String
+    },
+
+    contactPhone2: {
+      type: String
+    },
+
+    contactEmail: {
+      type: String
+    },
+
     carName: {
       type: String,
+      required: true,
+    },
+
+    carOwner: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
 
@@ -100,6 +134,11 @@ const auctionSchema = new Schema(
 
       cargoVolume: {
         type: String,
+      },
+
+      isPublic: {
+        type: Boolean,
+        default: false
       },
 
   },
