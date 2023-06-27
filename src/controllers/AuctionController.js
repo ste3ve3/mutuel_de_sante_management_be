@@ -90,7 +90,7 @@ const getAuctionCars = async (request, response) => {
     }
 
     // Filter cars by year
-    if (request.query.year) {
+    if (request.query.year && request.query.year !== "All") {
       query.push({
         $match: {
           year: request.query.year,
@@ -99,7 +99,7 @@ const getAuctionCars = async (request, response) => {
     }
 
     // Filter cars by brand
-    if (request.query.brand) {
+    if (request.query.brand && request.query.brand !== "All") {
       query.push({
         $match: {
           brand: request.query.brand,
@@ -132,7 +132,7 @@ const getAuctionCars = async (request, response) => {
     // Pagination functionality
     let total = await auctionModel.countDocuments(query);
     let page = request.query.page ? parseInt(request.query.page) : 1;
-    let perPage = request.query.perPage ? parseInt(request.query.perPage) : 4;
+    let perPage = request.query.perPage ? parseInt(request.query.perPage) : 4;  
     let skip = (page - 1) * perPage;
     query.push({
       $skip: skip,
@@ -148,6 +148,7 @@ const getAuctionCars = async (request, response) => {
         data: allCars.map((doc) => auctionModel.hydrate(doc)),
         paginationDetails: {
           total: total,
+          availableData: allCars.length,
           currentPage: page,
           perPage: perPage,
           totalPages: Math.ceil(total / perPage),

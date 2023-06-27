@@ -138,7 +138,7 @@ const loginUser = async (request, response) => {
     const token = generateAccessToken(getUser, response);
 
     response.status(200).json({
-      successMessage: "Logged In Successfully, redirecting...",
+      successMessage: "Logged In Successfully!",
       result: getUser,
       Access_Token: token,
     });
