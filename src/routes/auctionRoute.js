@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post( '/', authentication.authLogin, AuctionController.addToAuction );
 router.get( '/', AuctionController.getAuctionCars );
+router.get( '/carDetails', AuctionController.getDetailedCar );
 
 export default router;

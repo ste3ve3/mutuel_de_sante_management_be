@@ -114,10 +114,16 @@ const verifyEmail = async (request, response) => {
 const loginUser = async (request, response) => {
   try {
     const getUser = await User.findOne({ email: request.body.email });
+    const isDashboardAuth = request.query.isDashboardAuth
 
     if (!getUser)
       return response.status(400).json({
         message: "Invalid email or password, Please try again!",
+      });
+    
+    if (isDashboardAuth && getUser.role !== "admin")
+      return response.status(400).json({
+        message: "You don't have access to this dashboard!",
       });
 
     if (!getUser.isVerified)
@@ -139,7 +145,7 @@ const loginUser = async (request, response) => {
 
     response.status(200).json({
       successMessage: "Logged In Successfully!",
-      result: getUser,
+      data: getUser,
       Access_Token: token,
     });
   } catch (error) {

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Types } from "mongoose";
 import auctionModel from "../models/auctionModel.js";
 import carValidationSchema from "../validations/carFormValidation.js";
 import { uploadToCloudinary } from "../helpers/upload.js";
@@ -166,7 +167,34 @@ const getAuctionCars = async (request, response) => {
 };
 
 
+// Get detailed auction car
+const getDetailedCar = async (request, response) => {
+  try {
+    let carId = request.query.carId;
+
+    const car = await auctionModel.findOne({
+      _id: carId
+    });
+
+    if (!car) {
+      response.status(400).json({ message: "Car not found in our system!" });
+      return
+    }
+
+    response.status(200).json({
+      data: car,
+    });
+  } catch (error) {
+    response.status(500).json({
+      status: "fail",
+      message: error.message,
+    });
+  }
+};
+
+
 export default {
     addToAuction,
-    getAuctionCars
+    getAuctionCars,
+    getDetailedCar
 };
