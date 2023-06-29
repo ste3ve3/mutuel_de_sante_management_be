@@ -237,7 +237,7 @@ const assignUserRole = async (request, response) => {
         subject: "Magerwa VCC | Role Updated!",
         html: `
               <div style="padding: 10px 0;">
-                  <p style="font-size: 16px;"> Hello ${updated.names}, we would like to let you know that you have been made an admin on our platform which will give you access to our dashboard where you can customize out site settings.  </p> 
+                  <p style="font-size: 16px;"> Hello ${updated.names}, we would like to let you know that you have been made an admin on our platform which will give you access to our dashboard where you can customize our site settings.  </p> 
               </div>
               `,
       });

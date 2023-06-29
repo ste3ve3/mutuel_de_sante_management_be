@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import carRegistrationModel from "../models/carRegistrationModel.js";
+import auctionModel from "../models/auctionModel.js";
 import userModel from "../models/userModel.js";
 import registeredCarValidationSchema from "../validations/registeredCarValidation.js";
 import { uploadToCloudinary } from "../helpers/upload.js";
@@ -99,6 +100,22 @@ const getRegisteredCars = async (request, response) => {
       });
     }
 
+    // Filter by clearance
+    if (request.query.cleared == "true") {
+      query.push({
+        $match: {
+          isCleared: true,
+        },
+      });
+    }
+    if (request.query.cleared == "false") {
+      query.push({
+        $match: {
+          isCleared: false,
+        },
+      });
+    }
+
     // Filter cars by year
     if (request.query.year && request.query.year !== "All") {
       query.push({
@@ -116,6 +133,7 @@ const getRegisteredCars = async (request, response) => {
         },
       });
     }
+
 
     // Show only public cars
     if (request.query.all !== "admin") {
@@ -152,7 +170,7 @@ const getRegisteredCars = async (request, response) => {
     });
 
     const allCars = await carRegistrationModel.aggregate(query);
-    
+
     if (allCars) {
       response.status(200).json({
         data: allCars.map((doc) => carRegistrationModel.hydrate(doc)),
@@ -284,8 +302,122 @@ const userRegisteredCars = async (request, response) => {
 };
 
 
+const carClearance = async (request, response) => {
+  try {
+    const id = request.query.carId;
+    const car =
+      await carRegistrationModel.findById(id);
+    if (!car) {
+      throw new HttpException(
+        400,
+        'Car not found!'
+      );
+    }
+    car.isCleared = true;
+
+    const updated = await car.save();
+
+    response.status(200).json({
+      successMessage: `The ${car.carName} car was cleared successfully!`,
+      updatedCar: updated,
+    });
+  } catch (error) {
+    console.log(error);
+    response.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+const deleteCar = async (req, res) => {
+  try {
+    if (
+      !req.query.carId ||
+      !mongoose.Types.ObjectId.isValid(req.query.carId)
+    ) {
+      throw new Error(
+        !req.query.carId
+          ? 'Car id required'
+          : 'Invalid car id format',
+      );
+    }
+    const car =
+      await carRegistrationModel.findByIdAndDelete(req.query.carId)
+    if (!car) {
+      throw new Error(
+        "The car you're trying to delete does no longer exist",
+      );
+    }
+
+    res.status(200).json({
+      successMessage: 'Car deleted Successfully!',
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+
+// Add car to auction
+const moveToAuction = async (request, response) => {
+  try {
+    const { carId } = request.query
+    if (!mongoose.Types.ObjectId.isValid(carId)) {
+      return response.status(400).json({
+        message:
+          'Something went wrong, refresh your page and try again!',
+      });
+    }
+
+    const targetedCar = carRegistrationModel.findeOne({ _id: carId })
+
+    if(!targetedCar) {
+      return response.status(400).json({
+        message:
+          'Car not found!',
+      });
+    }
+
+    const { _id, createdAt, updatedAt, isCleared, isPublic, ...carData } = targetedCar;
+
+    const newAuctionCar = new auctionModel({
+      ...carData,
+      auctionDate: request.body.auctionDate,
+      auctionTime: request.body.auctionTime,
+      auctionLocation: request.body.auctionLocation,
+      locationMap: request.body.locationMap,
+      contactPhone1: request.body.contactPhone1,
+      contactPhone2: request.body.contactPhone2,
+      contactEmail: request.body.contactEmail,
+      isPublic: true 
+     });
+
+    const auctionCar = await newAuctionCar.save();
+
+    await carRegistrationModel.findByIdAndDelete(carId)
+
+    response.status(200).json({
+      successMessage: `Car was successfully moved to auction!`,
+      carContent: auctionCar,
+    });
+  } catch (error) {
+      response.status(500).json({
+        status: 'fail',
+        message: error.message,
+      });
+  }
+};
+
+
 export default {
     registerCar,
     getRegisteredCars,
-    userRegisteredCars
+    userRegisteredCars,
+    carClearance,
+    deleteCar,
+    moveToAuction
 };

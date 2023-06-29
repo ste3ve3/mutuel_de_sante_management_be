@@ -113,6 +113,11 @@ const carRegistrationSchema = new Schema(
         default: false
       },
 
+      isCleared: {
+        type: Boolean,
+        default: false
+      },
+
   },
   {
     timestamps: true,
