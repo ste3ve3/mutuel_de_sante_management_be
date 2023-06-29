@@ -393,7 +393,7 @@ const moveToAuction = async (request, response) => {
       contactPhone1: request.body.contactPhone1,
       contactPhone2: request.body.contactPhone2,
       contactEmail: request.body.contactEmail,
-      isPublic: true 
+      isPublic: request.body.isPublic 
      });
 
     const auctionCar = await newAuctionCar.save();
