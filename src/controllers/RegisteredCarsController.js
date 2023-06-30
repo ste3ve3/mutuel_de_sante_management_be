@@ -322,7 +322,6 @@ const carClearance = async (request, response) => {
       updatedCar: updated,
     });
   } catch (error) {
-    console.log(error);
     response.status(500).json({
       status: 'fail',
       message: error.message,
@@ -373,7 +372,7 @@ const moveToAuction = async (request, response) => {
       });
     }
 
-    const targetedCar = carRegistrationModel.findeOne({ _id: carId })
+    const targetedCar = await carRegistrationModel.findOne({ _id: carId })
 
     if(!targetedCar) {
       return response.status(400).json({
@@ -382,7 +381,7 @@ const moveToAuction = async (request, response) => {
       });
     }
 
-    const { _id, createdAt, updatedAt, isCleared, isPublic, ...carData } = targetedCar;
+    const { _id, createdAt, updatedAt, isCleared, isPublic, ...carData } = targetedCar._doc;
 
     const newAuctionCar = new auctionModel({
       ...carData,
@@ -405,6 +404,7 @@ const moveToAuction = async (request, response) => {
       carContent: auctionCar,
     });
   } catch (error) {
+      console.log(error);
       response.status(500).json({
         status: 'fail',
         message: error.message,

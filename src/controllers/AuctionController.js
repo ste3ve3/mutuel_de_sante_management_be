@@ -193,8 +193,108 @@ const getDetailedCar = async (request, response) => {
 };
 
 
+const publishCar = async (request, response) => {
+  try {
+    const id = request.query.carId;
+    const car =
+      await auctionModel.findById(id);
+    if (!car) {
+      throw new HttpException(
+        400,
+        'Car not found!'
+      );
+    }
+    car.isPublic = request.body.isPublic;
+
+    const updated = await car.save();
+
+    response.status(200).json({
+      successMessage: `The visibility of ${car.carName} car was changed successfully!`,
+      updatedCar: updated,
+    });
+  } catch (error) {
+    response.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+const editCar = async (request, response) => {
+  try {
+    let carId = request.query.carId;
+
+    const AuctionCar = await auctionModel.findOne({ _id: carId });
+
+    if (AuctionCar) {
+      (AuctionCar.auctionDate = request.body.auctionDate || AuctionCar.auctionDate),
+        (AuctionCar.auctionTime =
+          request.body.auctionTime || AuctionCar.auctionTime),
+        (AuctionCar.auctionLocation =
+          request.body.auctionLocation ||
+          AuctionCar.auctionLocation),
+        (AuctionCar.locationMap = request.body.locationMap || AuctionCar.locationMap),
+        (AuctionCar.contactPhone1 = request.body.contactPhone1 || AuctionCar.contactPhone1),
+        (AuctionCar.contactPhone2 =
+          request.body.contactPhone2 || AuctionCar.contactPhone2),
+        (AuctionCar.contactEmail = request.body.contactEmail || AuctionCar.contactEmail)
+
+      await AuctionCar.save();
+
+      response.status(200).json({
+        successMessage: 'Car updated successfully!',
+        updatedAuctionCar: AuctionCar,
+      });
+    } else {
+      response.status(400).json({
+        carUpdateError: 'Car not found!',
+      });
+    }
+  } catch (error) {
+    response.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+const deleteCar = async (req, res) => {
+  try {
+    if (
+      !req.query.carId ||
+      !mongoose.Types.ObjectId.isValid(req.query.carId)
+    ) {
+      throw new Error(
+        !req.query.carId
+          ? 'Car id required'
+          : 'Invalid car id format',
+      );
+    }
+    const car =
+      await auctionModel.findByIdAndDelete(req.query.carId)
+    if (!car) {
+      throw new Error(
+        "The car you're trying to delete does no longer exist",
+      );
+    }
+
+    res.status(200).json({
+      successMessage: 'Car deleted Successfully!',
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'fail',
+      message: error.message,
+    });
+  }
+};
+
+
 export default {
     addToAuction,
     getAuctionCars,
-    getDetailedCar
+    getDetailedCar,
+    publishCar,
+    editCar,
+    deleteCar
 };
