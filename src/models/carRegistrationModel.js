@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import moment from 'moment';
 
 const Schema = mongoose.Schema;
 
@@ -123,5 +124,13 @@ const carRegistrationSchema = new Schema(
     timestamps: true,
   },
 );
+
+carRegistrationSchema.set('toJSON', {
+  virtuals: true,
+  transform: function (doc, ret) {
+    ret.createdAt = moment(ret.createdAt).format('MMMM, DD YYYY');
+    ret.updatedAt = moment(ret.updatedAt).format('MMMM, DD YYYY');
+  },
+});
 
 export default mongoose.model('registeredCar', carRegistrationSchema);

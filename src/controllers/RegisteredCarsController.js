@@ -6,6 +6,7 @@ import registeredCarValidationSchema from "../validations/registeredCarValidatio
 import { uploadToCloudinary } from "../helpers/upload.js";
 import { generateAccessToken } from "../helpers/security.helper.js";
 import { Types } from "mongoose";
+import { sendEmail } from "../helpers/nodemailer.js";
 
 // Register your car
 const registerCar = async (request, response) => {
@@ -141,6 +142,51 @@ const getRegisteredCars = async (request, response) => {
         $match: {
           isPublic: true,
         },
+      });
+    }
+
+    const { date } = request.query;
+    function objectIdWithTimestamp(timestamp) {
+      /* Convert string date to Date object (otherwise assume timestamp is a date) */
+      if (typeof timestamp == 'string') {
+        timestamp = new Date(timestamp);
+      }
+
+      /* Convert date object to hex seconds since Unix epoch */
+      var hexSeconds = Math.floor(timestamp / 1000).toString(16);
+
+      /* Create an ObjectId with that hex timestamp */
+      var constructedObjectId = new Types.ObjectId(
+        hexSeconds + '0000000000000000',
+      );
+
+      return constructedObjectId;
+    }
+    const where = {};
+    if (date) {
+      const { year, month, isYearly } = JSON.parse(date);
+      if (isYearly) {
+        where._id = {
+          $gt: objectIdWithTimestamp(`${year}/01/01`),
+          $lt: objectIdWithTimestamp(`${Number(year) + 1}/01/01`),
+        };
+      } else {
+        let lt;
+        if (Number(month) == 12) {
+          lt = objectIdWithTimestamp(`${Number(year) + 1}/01/01`);
+        } else {
+          const str = `${year}/${Number(month) + 1}/01`;
+          lt = objectIdWithTimestamp(str);
+        }
+        // console.log(lt)
+        where._id = {
+          $gt: objectIdWithTimestamp(`${year}/${month}/01`),
+          $lt: lt,
+        };
+      }
+
+      query.push({
+        $match: where,
       });
     }
 
@@ -306,7 +352,7 @@ const carClearance = async (request, response) => {
   try {
     const id = request.query.carId;
     const car =
-      await carRegistrationModel.findById(id);
+      await carRegistrationModel.findById(id).populate("carOwner");
     if (!car) {
       throw new HttpException(
         400,
@@ -316,6 +362,16 @@ const carClearance = async (request, response) => {
     car.isCleared = true;
 
     const updated = await car.save();
+
+    sendEmail({
+      to: car.carOwner.email,
+      subject: "Magerwa VCC | Car Clearance Report",
+      html: `
+            <div style="padding: 10px 0;">
+                <p style="font-size: 16px;"> Hello ${car.carOwner.names}, Magerwa Team here! We would like to let you know that your ${car.carName} car was cleared from Magerwa VCC successfully! </p> 
+            </div>
+            `,
+    });
 
     response.status(200).json({
       successMessage: `The ${car.carName} car was cleared successfully!`,
@@ -372,7 +428,7 @@ const moveToAuction = async (request, response) => {
       });
     }
 
-    const targetedCar = await carRegistrationModel.findOne({ _id: carId })
+    const targetedCar = await carRegistrationModel.findOne({ _id: carId }).populate("carOwner");
 
     if(!targetedCar) {
       return response.status(400).json({
@@ -398,6 +454,16 @@ const moveToAuction = async (request, response) => {
     const auctionCar = await newAuctionCar.save();
 
     await carRegistrationModel.findByIdAndDelete(carId)
+
+    sendEmail({
+      to: targetedCar.carOwner.email,
+      subject: "Magerwa VCC | Your Car Moved to Auction",
+      html: `
+            <div style="padding: 10px 0;">
+                <p style="font-size: 16px;"> Hello ${targetedCar.carOwner.names}, Magerwa Team here! We would like to let you know that your ${targetedCar.carName} car has been moved to auction due to late payments! Check our platform for more information. </p> 
+            </div>
+            `,
+    });
 
     response.status(200).json({
       successMessage: `Car was successfully moved to auction!`,
