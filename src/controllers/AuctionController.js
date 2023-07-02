@@ -27,7 +27,7 @@ const addToAuction = async (request, response) => {
         ...request.body,
         carOwner: request.user?._id,
         carImage: carImageResult.secure_url,
-        isPublic: true 
+        isPublic: false 
        });
   
       const auctionCar = await newAuctionCar.save();
