@@ -428,6 +428,8 @@ const moveToAuction = async (request, response) => {
       });
     }
 
+    const { isEndUser } = request.query;
+
     const targetedCar = await carRegistrationModel.findOne({ _id: carId }).populate("carOwner");
 
     if(!targetedCar) {
@@ -438,18 +440,28 @@ const moveToAuction = async (request, response) => {
     }
 
     const { _id, createdAt, updatedAt, isCleared, isPublic, ...carData } = targetedCar._doc;
+    let newAuctionCar;
 
-    const newAuctionCar = new auctionModel({
-      ...carData,
-      auctionDate: request.body.auctionDate,
-      auctionTime: request.body.auctionTime,
-      auctionLocation: request.body.auctionLocation,
-      locationMap: request.body.locationMap,
-      contactPhone1: request.body.contactPhone1,
-      contactPhone2: request.body.contactPhone2,
-      contactEmail: request.body.contactEmail,
-      isPublic: request.body.isPublic 
-     });
+    if(isEndUser) {
+      newAuctionCar = new auctionModel({
+        ...carData,
+        isPublic: false
+       });
+    }
+    else {
+      newAuctionCar = new auctionModel({
+        ...carData,
+        auctionDate: request.body.auctionDate,
+        auctionTime: request.body.auctionTime,
+        auctionLocation: request.body.auctionLocation,
+        locationMap: request.body.locationMap,
+        contactPhone1: request.body.contactPhone1,
+        contactPhone2: request.body.contactPhone2,
+        contactEmail: request.body.contactEmail,
+        isPublic: request.body.isPublic 
+       });
+    }
+    
 
     const auctionCar = await newAuctionCar.save();
 
@@ -460,13 +472,13 @@ const moveToAuction = async (request, response) => {
       subject: "Magerwa VCC | Your Car Moved to Auction",
       html: `
             <div style="padding: 10px 0;">
-                <p style="font-size: 16px;"> Hello ${targetedCar.carOwner.names}, Magerwa Team here! We would like to let you know that your ${targetedCar.carName} car has been moved to auction due to late payments! Check our platform for more information. </p> 
+                <p style="font-size: 16px;"> Hello ${targetedCar.carOwner.names}, Magerwa Team here! We would like to let you know that your ${targetedCar.carName} car has been moved to auction! Check our platform for more information. </p> 
             </div>
             `,
     });
 
     response.status(200).json({
-      successMessage: `Car was successfully moved to auction!`,
+      successMessage: isEndUser ? "Car was successfully submitted for review!" : "Car was successfully moved to auction!",
       carContent: auctionCar,
     });
   } catch (error) {
