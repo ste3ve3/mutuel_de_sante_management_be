@@ -18,7 +18,8 @@ const corsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://magerwavcc.vercel.app'
+    'https://magerwavcc.vercel.app',
+    'https://magerwavccdashboard.vercel.app'
   ],
   credentials: true,
   optionsSuccessStatus: 200,
