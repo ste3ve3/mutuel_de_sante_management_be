@@ -14,7 +14,8 @@ const addTaxes = async (request, response) => {
 
 const getTaxes = async (request, response) => {
     try {
-        const taxCalculations = await taxesModel.find();
+        const { carCondition } = request.query;
+        const taxCalculations = await taxesModel.find({ category: carCondition });
         response.status(200).json({ data: taxCalculations});
       } catch (error) {
         response.status(500).json({ error: error.message });
@@ -23,11 +24,11 @@ const getTaxes = async (request, response) => {
 
 const udpateTaxes = async (request, response) => {
     try {
-        const { taxCalculationId } = request.query;
+        const { carCondition } = request.query;
         const updatedTaxCalculationData = request.body;
     
-        const updatedTaxCalculation = await taxesModel.findByIdAndUpdate(
-          taxCalculationId,
+        const updatedTaxCalculation = await taxesModel.updateOne(
+          { category: carCondition },
           updatedTaxCalculationData,
           { new: true }
         );

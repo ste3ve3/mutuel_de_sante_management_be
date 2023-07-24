@@ -108,6 +108,15 @@ const getAuctionCars = async (request, response) => {
       });
     }
 
+    // Filter cars by mileage
+    if (request.query.mileage && request.query.mileage !== "All") {
+      query.push({
+        $match: {
+          mileage: request.query.mileage,
+        },
+      });
+    }
+
     // Show only public cars
     if (request.query.all !== "admin") {
       query.push({
@@ -237,7 +246,8 @@ const editCar = async (request, response) => {
         (AuctionCar.contactPhone1 = request.body.contactPhone1 || AuctionCar.contactPhone1),
         (AuctionCar.contactPhone2 =
           request.body.contactPhone2 || AuctionCar.contactPhone2),
-        (AuctionCar.contactEmail = request.body.contactEmail || AuctionCar.contactEmail)
+        (AuctionCar.contactEmail = request.body.contactEmail || AuctionCar.contactEmail),
+        (AuctionCar.carPrice = request.body.carPrice || AuctionCar.carPrice)
 
       await AuctionCar.save();
 

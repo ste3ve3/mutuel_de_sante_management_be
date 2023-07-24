@@ -439,18 +439,20 @@ const moveToAuction = async (request, response) => {
       });
     }
 
-    const { _id, createdAt, updatedAt, isCleared, isPublic, ...carData } = targetedCar._doc;
+    const { _id, createdAt, updatedAt, isCleared, isPublic, carPrice, ...carData } = targetedCar._doc;
     let newAuctionCar;
 
     if(isEndUser) {
       newAuctionCar = new auctionModel({
         ...carData,
+        carPrice,
         isPublic: false
        });
     }
     else {
       newAuctionCar = new auctionModel({
         ...carData,
+        carPrice: request.body.carPrice == "" ? carPrice : request.body.carPrice,
         auctionDate: request.body.auctionDate,
         auctionTime: request.body.auctionTime,
         auctionLocation: request.body.auctionLocation,

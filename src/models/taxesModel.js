@@ -82,6 +82,13 @@ const taxCalculationSchema = new Schema(
       type: Number,
       required: true,
     },
+    category: {
+      type: String,
+      enum: [
+        'New',
+        'Used'
+      ],
+    },
   },
   {
     timestamps: true,
