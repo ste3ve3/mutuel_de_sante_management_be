@@ -13,7 +13,7 @@ const sender = nodemailer.createTransport({
 
 function sendEmail({ to, subject, html }) {
   const mailOptions = {
-    from: '"Magerwa VCC" <ndicunguyesteve4@gmail.com>',
+    from: '"Announcements Manager" <ndicunguyesteve4@gmail.com>',
     to,
     subject,
     html,

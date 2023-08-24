@@ -21,19 +21,9 @@ const createNewUser = async (request, response) => {
     accountType: "Email",
   });
 
-  const googleUser = await User.findOne({
-    email: request.body.email,
-    accountType: "Google",
-  });
-
   if (normalUser)
     return response.status(409).json({
       message: `A user with email "${request.body.email}" already exist in our system!`,
-    });
-
-  if (googleUser)
-    return response.status(409).json({
-      message: `This email is already registered with google, try signing in with google!`,
     });
 
   try {
@@ -41,18 +31,11 @@ const createNewUser = async (request, response) => {
 
     const hashedPassword = await bcrypt.hash(request.body.password, salt);
 
-    const hashedRepeatPassword = await bcrypt.hash(
-      request.body.repeatPassword,
-      salt
-    );
-
     const newUser = new User({
-      names: request.body.names,
-      nationalId: request.body.nationalId,
+      firstName: request.body.firstName,
+      lastName: request.body.lastName,
       email: request.body.email,
       password: hashedPassword,
-      repeatPassword: hashedRepeatPassword,
-      emailToken: crypto.randomBytes(64).toString("hex"),
       isVerified: false,
     });
 
@@ -60,21 +43,17 @@ const createNewUser = async (request, response) => {
 
     sendEmail({
       to: newUser.email,
-      subject: "Magerwa VCC | Verify your email",
+      subject: "Announcements Manager | Account created!",
       html: `
             <div style="padding: 10px 0;">
-                <p style="font-size: 16px;"> ${newUser.names} welcome to Magerwa VCC! We recieved an offer from someone (hopefully you!) to create an account with us.  </p> 
-                <h4> Click the button below to verify your email... </h4>
-                <a style="border-radius: 5px; margin-bottom: 10px; text-decoration: none; color: white; padding: 10px; cursor: pointer; background: #00B4D0;" 
-                href="http://${request.headers.host}/auth/verifyEmail?token=${newUser.emailToken}"> 
-                Verify Email </a>
+                <p style="font-size: 16px;"> Hello, ${newUser.firstName} ${newUser.lastName} welcome to the announcements manager admin portal! Your account was created successfully and is being reviewed for approval. You will get an email from us once your account is approved!  </p> 
             </div>
             `,
     });
 
     response.status(201).json({
       successMessage:
-        "Account created successfully, Check your email to verify this account!",
+        "Account created successfully, We will reach out throught your email once this account is approved!",
     });
   } catch (error) {
     response.status(500).json({
@@ -85,23 +64,44 @@ const createNewUser = async (request, response) => {
 };
 
 
-const verifyEmail = async (request, response) => {
+const confirmUser = async (request, response) => {
   try {
-    const token = request.query.token;
-    const emailUser = await User.findOne({
-      emailToken: token,
+    const userId = request.query.userId;
+    const reviewedUser = await User.findOne({
+      _id: userId,
     });
 
-    if (emailUser) {
-      emailUser.emailToken = null;
-      emailUser.isVerified = true;
+    if (reviewedUser) {
+      reviewedUser.isVerified = request.body.isVerified;
 
-      await emailUser.save();
+      await reviewedUser.save();
 
-      response.redirect(process.env.EMAILVERIFIED_REDIRECT_URL);
-    } else {
-      response.send("This email is already verified!");
+      if(reviewedUser.isVerified) {
+        sendEmail({
+          to: reviewedUser.email,
+          subject: "Announcements Manager | Account approved!",
+          html: `
+                <div style="padding: 10px 0;">
+                    <p style="font-size: 16px;"> Hello again ${reviewedUser.firstName}, Your account was approved! You can now access the announcement manager admin portal.  </p> 
+                </div>
+                `,
+        });
+      }
+
+      response.status(201).json({
+        successMessage:
+          "User approved successfully!",
+        updatedUser: reviewedUser
+      });
     }
+
+    else {
+      response.status(201).json({
+        message:
+          "User not found!",
+      });
+    }
+
   } catch (error) {
     response.status(500).json({
       status: "fail",
@@ -113,41 +113,36 @@ const verifyEmail = async (request, response) => {
 
 const loginUser = async (request, response) => {
   try {
-    const getUser = await User.findOne({ email: request.body.email });
-    const isDashboardAuth = request.query.isDashboardAuth
+      const getUser = await User.findOne({ email: request.body.email });
 
-    if (!getUser)
+      if (!getUser)
       return response.status(400).json({
         message: "Invalid email or password, Please try again!",
+      });
+
+      if (!getUser.isVerified)
+        return response.status(400).json({
+          message: "Account not approved!",
+        });
+
+      const userPassword = await bcrypt.compare(
+        request.body.password,
+        getUser.password
+      );
+
+      if (!userPassword)
+        return response.status(400).json({
+          message: "Invalid email or password, Please try again!",
+        });
+
+      const token = generateAccessToken(getUser, response);
+
+      response.status(200).json({
+        successMessage: "Logged In Successfully!",
+        data: getUser,
+        Access_Token: token,
       });
     
-    if (isDashboardAuth && getUser.role !== "admin")
-      return response.status(400).json({
-        message: "You don't have access to this dashboard!",
-      });
-
-    if (!getUser.isVerified)
-      return response.status(400).json({
-        message: "Please check your email to verify this account!",
-      });
-
-    const userPassword = await bcrypt.compare(
-      request.body.password,
-      getUser.password
-    );
-
-    if (!userPassword)
-      return response.status(400).json({
-        message: "Invalid email or password, Please try again!",
-      });
-
-    const token = generateAccessToken(getUser, response);
-
-    response.status(200).json({
-      successMessage: "Logged In Successfully!",
-      data: getUser,
-      Access_Token: token,
-    });
   } catch (error) {
     response.status(500).json({
       status: "Fail",
@@ -289,7 +284,7 @@ const deleteUser = async (req, res) => {
 
 export default {
   createNewUser,
-  verifyEmail,
+  confirmUser,
   loginUser,
   logoutUser,
   loggedInUser,

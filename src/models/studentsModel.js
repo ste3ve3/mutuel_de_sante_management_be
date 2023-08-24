@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema(
+const studentSchema = new Schema(
   {
     firstName: {
       type: String,
@@ -14,22 +14,8 @@ const userSchema = new Schema(
       required: true,
     },
 
-    email: {
-      type: String,
-      required: true,
-    },
-
     regNumber: {
       type: String,
-    },
-
-    password: {
-      type: String,
-      required: true,
-    },
-
-    isVerified: {
-      type: Boolean,
     },
   },
   {
@@ -37,4 +23,4 @@ const userSchema = new Schema(
   },
 );
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model('Student', studentSchema);

@@ -1,6 +1,6 @@
 import Joi from "@hapi/joi";
 
-const userValidationSchema = Joi.object({
+const studentValidationSchema = Joi.object({
     firstName: Joi.string().required().min(2).label("first name").regex(/^[A-Za-z ]+$/).messages({
         "string.pattern.base": "The firstName field can not include numbers and special characters",
         "string.empty": "The firstName field can not be empty"
@@ -10,16 +10,16 @@ const userValidationSchema = Joi.object({
         "string.empty": "The lastName field can not be empty"
     }),
 
-    email: Joi.string().required().email().messages({
-        "string.email": "Invalid email",
-        "string.empty": "The email field can not be empty"
-    }),
+    studentEmail: Joi.string().allow('').optional(),
 
-    password: Joi.string().required().regex(/^(?=(.*[A-Z]){1,})(?=(.*[a-z]){1,})(?=(.*[0-9]){1,}).{5,}$/).messages({
-        "string.pattern.base": "The password should have at least one capital letter and a number",
-        "string.empty": "The password field can not be empty"
+    regNumber: Joi.string()
+    .required()
+    .pattern(/^\d+$/)
+    .messages({
+      "string.empty": "The registration number field cannot be empty",
+      "string.pattern.base": "The registration number must only contain numbers",
     }),
 })
 
 
-export default userValidationSchema
+export default studentValidationSchema
