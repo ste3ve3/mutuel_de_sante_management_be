@@ -1,6 +1,6 @@
 import cloudinary from "./cloudinary.js";
 
-const folder = "Magerwa VCC Images";
+const folder = "Announcement App Images";
 
 export const uploadToCloudinary = async (image) => {
   try {

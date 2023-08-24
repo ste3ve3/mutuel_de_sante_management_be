@@ -6,11 +6,11 @@ const router = express.Router();
 
 router.post("/", AuthController.createNewUser);
 router.get('/', AuthController.getAllUsers);
-router.delete('/', authentication.isAdmin, AuthController.deleteUser);
+router.delete('/', AuthController.deleteUser);
 router.get("/confirmUser", AuthController.confirmUser);
 router.post('/login', AuthController.loginUser);
 router.post( '/logout', authentication.authLogin, AuthController.logoutUser );
 router.get( '/loggedInUser', authentication.authLogin, AuthController.loggedInUser);
-router.patch('/assignUserRole', authentication.isAdmin, AuthController.assignUserRole);
+router.patch('/assignUserRole', AuthController.assignUserRole);
 
 export default router;
