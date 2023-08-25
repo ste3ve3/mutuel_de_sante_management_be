@@ -7,7 +7,7 @@ const router = express.Router();
 router.post( '/', authentication.authLogin, AnnouncementController.createAnnouncement);
 router.get( '/', AnnouncementController.getAllAnnouncements);
 router.patch( '/', authentication.authLogin, AnnouncementController.updateAnnouncement);
-router.delete( '/', AnnouncementController.deleteAnnouncemeent);
+router.delete( '/', authentication.authLogin, AnnouncementController.deleteAnnouncemeent);
 router.get( '/getSingleAnnouncement', AnnouncementController.getSingleAnnouncement);
 
 export default router;

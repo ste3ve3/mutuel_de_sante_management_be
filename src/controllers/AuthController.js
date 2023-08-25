@@ -203,53 +203,6 @@ const getAllUsers = async (request, response) => {
   }
 };
 
-const assignUserRole = async (request, response) => {
-  try {
-    const id = request.query.userId;
-    const { role } = request.body;
-    if (!role) {
-      throw new HttpException(
-        400,
-        'Role is required!'
-      );
-    }
-    const user =
-      await User.findById(id);
-    if (!user) {
-      throw new HttpException(
-        400,
-        'User not found!'
-      );
-    }
-
-    user.role = role;
-
-    const updated = await user.save();
-
-    if(role === "admin") {
-      sendEmail({
-        to: updated.email,
-        subject: "Magerwa VCC | Role Updated!",
-        html: `
-              <div style="padding: 10px 0;">
-                  <p style="font-size: 16px;"> Hello ${updated.names}, we would like to let you know that you have been made an admin on our platform which will give you access to our dashboard where you can customize our site settings.  </p> 
-              </div>
-              `,
-      });
-    }
-
-    response.status(200).json({
-      successMessage: `Role updated successfully!`,
-      updatedUser: updated,
-    });
-  } catch (error) {
-    response.status(500).json({
-      status: 'fail',
-      message: error.message,
-    });
-  }
-};
-
 const deleteUser = async (req, res) => {
   try {
     if (
@@ -289,6 +242,5 @@ export default {
   logoutUser,
   loggedInUser,
   getAllUsers,
-  assignUserRole,
   deleteUser
 };

@@ -57,18 +57,133 @@ const createAnnouncement = async (request, response) => {
     }
   };
 
+  // const getAllAnnouncements = async (request, response) => {
+  //   try {
+  //     const announcements = await announcementModel.find().sort({ createdAt: -1 }).populate({
+  //       path: "createdBy"
+  //     })
+  
+  //     response.status(200).json({
+  //       data: announcements,
+  //     });
+  //   } catch (error) {
+  //     response.status(500).json({
+  //       status: 'fail',
+  //       message: error.message,
+  //     });
+  //   }
+  // };
+
   const getAllAnnouncements = async (request, response) => {
     try {
-      const announcements = await announcementModel.find().sort({ createdAt: -1 }).populate({
-        path: "createdBy"
-      })
+      let query = [
+        {
+          $lookup: {
+            from: "users",
+            localField: "createdBy",
+            foreignField: "_id",
+            as: "staffCreator",
+          },
+        },
+        { $unwind: "$staffCreator" },
+      ];
   
-      response.status(200).json({
-        data: announcements,
-      });
+      // Search functionality
+      if (request.query.keyword && request.query.keyword != "") {
+        query.push({
+          $match: {
+            $or: [
+              {
+                title: { $regex: request.query.keyword, $options: "i" },
+              },
+              {
+                postBody: {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "staffCreator.firstName": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "title": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "role": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "announcementBody": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "category": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+              {
+                "staffCreator.lastName": {
+                  $regex: request.query.keyword,
+                  $options: "i",
+                },
+              },
+            ],
+          },
+        });
+      }
+  
+      if (request.query.creatorId && request.query.creatorId !== "All") {
+        query.push({
+          $match: {
+            createdBy: new mongoose.Types.ObjectId(request.query.creatorId),
+          },
+        });
+      }
+  
+      if (request.query.category && request.query.category !== "All") {
+        query.push({
+          $match: {
+            category: request.query.category,
+          },
+        });
+      }
+  
+      // Sort functionality
+      if (request.query.sortBy && request.query.sortOrder) {
+        var sort = {};
+        sort[request.query.sortBy] = request.query.sortOrder == "asc" ? 1 : -1;
+        query.push({
+          $sort: sort,
+        });
+      } else {
+        query.push({
+          $sort: { createdAt: -1 },
+        });
+      }
+  
+      const allAnnouncements = await announcementModel.aggregate(query);
+  
+      if (allAnnouncements) {
+        response.status(200).json({
+          data: allAnnouncements.map((doc) => announcementModel.hydrate(doc)),
+        });
+      } else {
+        response.status(400).json({ message: "No announcements found" });
+      }
     } catch (error) {
       response.status(500).json({
-        status: 'fail',
+        status: "fail",
         message: error.message,
       });
     }
@@ -155,6 +270,15 @@ const createAnnouncement = async (request, response) => {
             ? 'Announcement id required'
             : 'Invalid announcement id format',
         );
+      }
+      const announcement = await announcementModel.findOne({ _id: req.query.announcementId });
+      let current_user = req.user;
+  
+      if (announcement.createdBy != current_user._id) {
+        return res.status(400).json({
+          message:
+            'Access denied, you are not the creator of this announcement!',
+      });
       }
       const user =
         await announcementModel.findByIdAndDelete(req.query.announcementId)
