@@ -34,7 +34,7 @@ const createNewStudent = async (request, response) => {
             subject: "You have been registered!",
             html: `
                   <div style="padding: 10px 0;">
-                      <p style="font-size: 16px;"> Hello ${newUser.firstName} ${newUser.lastName}, you have been registered to the Official Students Announcements App! You can now login into the app using your registration number.  </p> 
+                      <p style="font-size: 16px;"> Hello ${newUser.firstName} ${newUser.lastName}, you have been registered to the Official Students Announcements App! You can now login into the app using your registration number as the username and password.  </p> 
                   </div>
                   `,
         });
@@ -60,6 +60,11 @@ const loginStudent = async (request, response) => {
     if (!getUser)
     return response.status(400).json({
     message: "Registration number not found in our system!",
+    });
+
+    if (request.body.regNumber !== request.body.password)
+    return response.status(400).json({
+    message: "Invalid login credentials!",
     });
 
     response.status(200).json({

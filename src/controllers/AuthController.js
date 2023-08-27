@@ -35,6 +35,7 @@ const createNewUser = async (request, response) => {
       firstName: request.body.firstName,
       lastName: request.body.lastName,
       email: request.body.email,
+      role: request.body.role,
       password: hashedPassword,
       isVerified: false,
     });

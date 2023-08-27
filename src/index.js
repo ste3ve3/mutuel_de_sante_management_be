@@ -15,14 +15,13 @@ dotenv.config();
 const ourMemoryStore = MemoryStore(expressSession);
 const app = express();
 const corsOptions = {
-  // origin: [
-  //   'http://localhost:5173',
-  //   'http://localhost:3000',
-  //   'exp://192.168.8.146:19000',
-  //   'https://magerwavcc.vercel.app',
-  //   'https://magerwavccdashboard.vercel.app'
-  // ],
-  origin: "*",
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'exp://192.168.8.142:19000',
+    'https://magerwavcc.vercel.app',
+    'https://magerwavccdashboard.vercel.app'
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
 };

@@ -35,6 +35,7 @@ const createAnnouncement = async (request, response) => {
 
       else {
         newCategory = new announcementModel({
+            title: request.body.title,
             announcementFile: request.body.announcementFile,
             createdBy: request.user?._id,
           });
@@ -56,23 +57,6 @@ const createAnnouncement = async (request, response) => {
         });
     }
   };
-
-  // const getAllAnnouncements = async (request, response) => {
-  //   try {
-  //     const announcements = await announcementModel.find().sort({ createdAt: -1 }).populate({
-  //       path: "createdBy"
-  //     })
-  
-  //     response.status(200).json({
-  //       data: announcements,
-  //     });
-  //   } catch (error) {
-  //     response.status(500).json({
-  //       status: 'fail',
-  //       message: error.message,
-  //     });
-  //   }
-  // };
 
   const getAllAnnouncements = async (request, response) => {
     try {
@@ -173,7 +157,7 @@ const createAnnouncement = async (request, response) => {
       }
   
       const allAnnouncements = await announcementModel.aggregate(query);
-  
+
       if (allAnnouncements) {
         response.status(200).json({
           data: allAnnouncements.map((doc) => announcementModel.hydrate(doc)),
@@ -191,7 +175,7 @@ const createAnnouncement = async (request, response) => {
 
   const getSingleAnnouncement = async (request, response) => {
     try {
-      const announcement = await announcementModel.findOne({ _id : request.query.announcementId })
+      const announcement = await announcementModel.findOne({ _id : request.query.announcementId }).populate("createdBy")
   
       response.status(200).json({
         data: announcement,
@@ -237,6 +221,7 @@ const createAnnouncement = async (request, response) => {
               }
         }
         else {
+            announcement.title = request.body.title || announcement.title;
             announcement.announcementFile = request.body.announcementFile || announcement.announcementFile;
         }
   

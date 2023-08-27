@@ -15,6 +15,10 @@ const userValidationSchema = Joi.object({
         "string.empty": "The email field can not be empty"
     }),
 
+    role: Joi.string().required().min(2).label("last name").messages({
+        "string.empty": "The role field can not be empty"
+    }),
+
     password: Joi.string().required().regex(/^(?=(.*[A-Z]){1,})(?=(.*[a-z]){1,})(?=(.*[0-9]){1,}).{5,}$/).messages({
         "string.pattern.base": "The password should have at least one capital letter and a number",
         "string.empty": "The password field can not be empty"
