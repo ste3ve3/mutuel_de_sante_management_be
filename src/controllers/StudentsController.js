@@ -2,6 +2,7 @@ import studentsModel from "../models/studentsModel.js";
 import mongoose from "mongoose";
 import studentValidationSchema from "../validations/studentValidation.js";
 import { sendEmail } from "../helpers/nodemailer.js";
+import studentLoginValidationSchema from "../validations/studentLoginValidation.js";
 
 
 const createNewStudent = async (request, response) => {
@@ -54,6 +55,10 @@ const createNewStudent = async (request, response) => {
 };
 
 const loginStudent = async (request, response) => {
+  const { error } = studentLoginValidationSchema.validate(request.body);
+  if (error)
+    return response.status(400).json({ message: error.details[0].message });
+  
   try {
     const getUser = await studentsModel.findOne({ regNumber: request.body.regNumber });
 
@@ -68,7 +73,8 @@ const loginStudent = async (request, response) => {
     });
 
     response.status(200).json({
-    successMessage: "Logged In Successfully!",
+      successMessage: "Logged In Successfully!",
+      data: getUser
     });
     
   } catch (error) {

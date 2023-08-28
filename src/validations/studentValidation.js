@@ -14,10 +14,8 @@ const studentValidationSchema = Joi.object({
 
     regNumber: Joi.string()
     .required()
-    .pattern(/^\d+$/)
     .messages({
-      "string.empty": "The registration number field cannot be empty",
-      "string.pattern.base": "The registration number must only contain numbers",
+      "string.empty": "The registration number field cannot be empty"
     }),
 })
 

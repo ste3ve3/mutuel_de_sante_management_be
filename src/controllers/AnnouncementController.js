@@ -36,6 +36,7 @@ const createAnnouncement = async (request, response) => {
       else {
         newCategory = new announcementModel({
             title: request.body.title,
+            category: request.body.category,
             announcementFile: request.body.announcementFile,
             createdBy: request.user?._id,
           });
@@ -195,7 +196,7 @@ const createAnnouncement = async (request, response) => {
       if (announcement) {
         let current_user = request.user;
   
-        if (announcement.createdBy != current_user._id) {
+        if (announcement.createdBy != current_user._id && current_user.role !== "Principle") {
           return response.status(400).json({
             message:
               'Access denied, you are not the creator of this announcement!',
@@ -222,6 +223,7 @@ const createAnnouncement = async (request, response) => {
         }
         else {
             announcement.title = request.body.title || announcement.title;
+            announcement.category = request.body.category || announcement.category;
             announcement.announcementFile = request.body.announcementFile || announcement.announcementFile;
         }
   
@@ -259,7 +261,7 @@ const createAnnouncement = async (request, response) => {
       const announcement = await announcementModel.findOne({ _id: req.query.announcementId });
       let current_user = req.user;
   
-      if (announcement.createdBy != current_user._id) {
+      if (announcement.createdBy != current_user._id && current_user.role !== "Principle") {
         return res.status(400).json({
           message:
             'Access denied, you are not the creator of this announcement!',
