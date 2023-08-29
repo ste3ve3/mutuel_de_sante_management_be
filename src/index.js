@@ -19,8 +19,8 @@ const corsOptions = {
     'http://localhost:5173',
     'http://localhost:3000',
     'exp://192.168.8.142:19000',
-    'https://magerwavcc.vercel.app',
-    'https://magerwavccdashboard.vercel.app'
+    'https://announcementsmanager.vercel.app',
+    'exp://exp.host/@steve_ndicunguye/announcements_mobile_app?release-channel=default'
   ],
   credentials: true,
   optionsSuccessStatus: 200,
