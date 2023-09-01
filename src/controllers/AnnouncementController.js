@@ -138,14 +138,11 @@ const createAnnouncement = async (request, response) => {
   
       if (request.query.category && request.query.category !== "All") {
         query.push({
-          $or: [
-            {
-              category: request.query.category,
+          $match: {
+            category: {
+              $in: [request.query.category, "All"],
             },
-            {
-              category: "All",
-            },
-          ],
+          },
         });
       }
   
