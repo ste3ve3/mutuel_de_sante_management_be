@@ -136,11 +136,16 @@ const createAnnouncement = async (request, response) => {
         });
       }
   
-      if (request.query.category) {
+      if (request.query.category && request.query.category !== "All") {
         query.push({
-          $match: {
-            category: request.query.category || "All",
-          },
+          $or: [
+            {
+              category: request.query.category,
+            },
+            {
+              category: "All",
+            },
+          ],
         });
       }
   
