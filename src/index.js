@@ -16,11 +16,8 @@ const ourMemoryStore = MemoryStore(expressSession);
 const app = express();
 const corsOptions = {
   origin: [
-    'http://localhost:5173',
     'http://localhost:3000',
-    'exp://192.168.8.142:19000',
-    'https://announcementsmanager.vercel.app',
-    'exp://exp.host/@steve_ndicunguye/announcements_mobile_app?release-channel=default'
+    'https://mutueldesantemanagementsystem.vercel.app',
   ],
   credentials: true,
   optionsSuccessStatus: 200,
