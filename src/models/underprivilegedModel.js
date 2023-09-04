@@ -2,39 +2,40 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema(
+const underprivilegedSchema = new Schema(
   {
-    firstName: {
+    names: {
       type: String,
       required: true,
     },
 
-    lastName: {
+    passportPhoto: {
       type: String,
       required: true,
     },
 
-    email: {
+    phoneNumber: {
       type: String,
       required: true,
     },
 
-    role: {
+    nationalId: {
       type: String,
       required: true,
     },
 
-    regNumber: {
-      type: String,
-    },
-
-    password: {
+    residentCell: {
       type: String,
       required: true,
     },
 
-    isVerified: {
+    hasSponsor: {
       type: Boolean,
+      default: false
+    },
+    
+    sponsorId: {
+        type: String,
     },
   },
   {
@@ -42,4 +43,4 @@ const userSchema = new Schema(
   },
 );
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model('Underprivileged', underprivilegedSchema);

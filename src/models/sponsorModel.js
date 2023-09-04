@@ -2,20 +2,16 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const studentSchema = new Schema(
+const sponsorSchema = new Schema(
   {
-    firstName: {
+    names: {
       type: String,
       required: true,
     },
 
-    lastName: {
+    phoneNumber: {
       type: String,
       required: true,
-    },
-
-    regNumber: {
-      type: String,
     },
   },
   {
@@ -23,4 +19,4 @@ const studentSchema = new Schema(
   },
 );
 
-export default mongoose.model('Student', studentSchema);
+export default mongoose.model('Sponsor', sponsorSchema);
